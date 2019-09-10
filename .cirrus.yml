@@ -59,6 +59,21 @@ task:
   before_cache_script: rm -rf $CARGO_HOME/registry/index
 
 task:
+  name: Windows x86_64
+  windows_container:
+    image: cirrusci/windowsservercore:2019
+    os_version: 2019
+  env:
+    CIRRUS_SHELL: powershell
+  windows_x86_64_cargo_cache:
+    folder: $CARGO_HOME/registry
+    fingerprint_script: cat Cargo.lock
+  install_rustup_script: |
+    $client = new-object System.Net.WebClient
+    $client.DownloadFile('https://win.rustup.rs', "$pwd\rustup-init.exe")
+    .\rustup-init.exe
+
+task:
   name: Linux wasm32
   container:
     image: kronicdeth/lumen-development@sha256:2a6e1b519b1965586ab19be06470a2edcc18fb936f649cbd25a4bdb9911d15ad
