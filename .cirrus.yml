@@ -1,8 +1,8 @@
-task:
-  name: Check Formatted
-  container:
-    image: kronicdeth/lumen-development@sha256:2a6e1b519b1965586ab19be06470a2edcc18fb936f649cbd25a4bdb9911d15ad
-  script: cargo fmt -- --check
+#task:
+#  name: Check Formatted
+#  container:
+#    image: kronicdeth/lumen-development@sha256:2a6e1b519b1965586ab19be06470a2edcc18fb936f649cbd25a4bdb9911d15ad
+#  script: cargo fmt -- --check
 
 x86_64_task_template: &x86_64_TASK_TEMPLATE
   build_script: cargo build
@@ -32,131 +32,132 @@ x86_64_task_template: &x86_64_TASK_TEMPLATE
     cargo test
     popd
 
-task:
-  name: Linux x86_64
-  container:
-    image: kronicdeth/lumen-development@sha256:2a6e1b519b1965586ab19be06470a2edcc18fb936f649cbd25a4bdb9911d15ad
-    cpu: 4
-    memory: 12
-  linux_x86_64_cargo_cache:
-    folder: $CARGO_HOME/registry
-    fingerprint_script: cat Cargo.lock
-  << : *x86_64_TASK_TEMPLATE
-  before_cache_script: rm -rf $CARGO_HOME/registry/index
-
-task:
-  name: macOS x86_64
-  osx_instance:
-    image: mojave-base
-  env:
-    PATH: ${HOME}/.cargo/bin:${PATH}
-  macos_x86_64_cargo_cache:
-    folder: $CARGO_HOME/registry
-    fingerprint_script: cat Cargo.lock
-  install_rustup_script: |
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
-  <<: *x86_64_TASK_TEMPLATE
-  before_cache_script: rm -rf $CARGO_HOME/registry/index
+#task:
+#  name: Linux x86_64
+#  container:
+#    image: kronicdeth/lumen-development@sha256:2a6e1b519b1965586ab19be06470a2edcc18fb936f649cbd25a4bdb9911d15ad
+#    cpu: 4
+#    memory: 12
+#  linux_x86_64_cargo_cache:
+#    folder: $CARGO_HOME/registry
+#    fingerprint_script: cat Cargo.lock
+#  << : *x86_64_TASK_TEMPLATE
+#  before_cache_script: rm -rf $CARGO_HOME/registry/index
+#
+#task:
+#  name: macOS x86_64
+#  osx_instance:
+#    image: mojave-base
+#  env:
+#    PATH: ${HOME}/.cargo/bin:${PATH}
+#  macos_x86_64_cargo_cache:
+#    folder: $CARGO_HOME/registry
+#    fingerprint_script: cat Cargo.lock
+#  install_rustup_script: |
+#    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
+#  <<: *x86_64_TASK_TEMPLATE
+#  before_cache_script: rm -rf $CARGO_HOME/registry/index
 
 task:
   name: Windows x86_64
   windows_container:
-    image: cirrusci/windowsservercore:2019
+    image: cirrusci/windowsservercore:cmake
     os_version: 2019
   env:
     CIRRUS_SHELL: powershell
-  windows_x86_64_cargo_cache:
-    folder: $CARGO_HOME/registry
-    fingerprint_script: cat Cargo.lock
-  install_rustup_script: |
-    $client = new-object System.Net.WebClient
-    $client.DownloadFile('https://win.rustup.rs', "$pwd\rustup-init.exe")
-    .\rustup-init.exe
+    CARGO_HOME: $USERPROFILE\.cargo
+    PATH: $PATH;$CARGO_HOME\bin
+#  windows_x86_64_cargo_cache:
+#    folder: $CARGO_HOME\registry
+#    fingerprint_script: Get-Content Cargo.lock
+  install_rustup_script: "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -URI https://win.rustup.rs -OutFile rustup-init.exe; ./rustup-init.exe -y --default-toolchain nightly"
+  << : *x86_64_TASK_TEMPLATE
+#  before_cache_script: Remove-Item $CARGO_HOME\registry\index -Recurse -Force
 
-task:
-  name: Linux wasm32
-  container:
-    image: kronicdeth/lumen-development@sha256:2a6e1b519b1965586ab19be06470a2edcc18fb936f649cbd25a4bdb9911d15ad
-    memory: 6
-  linux_wasm32_cargo_cache:
-    folder: $CARGO_HOME/registry
-    fingerprint_script: cat Cargo.lock
-  firefox_version_script: firefox --version
-  gecko_driver_version_script: geckodriver --version
-  lumen_web_test_script: |
-    pushd lumen_web
-    wasm-pack test --headless --chrome --firefox
-    popd
-  examples_spawn_chain_build_script: |
-    pushd examples/spawn-chain
-    wasm-pack build
-    popd
-  examples_spawn_chain_test_script: |
-    pushd examples/spawn-chain
-    wasm-pack test --headless --chrome --firefox
-    popd
-  examples_spawn_chain_package_script: |
-    pushd examples/spawn-chain
-    pushd www
-    npm install
-    popd
-    pushd pkg
-    npm link
-    popd
-    pushd www
-    npm link spawn-chain
-    npm run build
-    popd
-    popd
-  examples_chain_chain_package_artifacts:
-    path: "examples/spawn-chain/www/dist/*"
-  before_cache_script: rm -rf $CARGO_HOME/registry/index
+#task:
+#  name: Linux wasm32
+#  container:
+#    image: kronicdeth/lumen-development@sha256:2a6e1b519b1965586ab19be06470a2edcc18fb936f649cbd25a4bdb9911d15ad
+#    memory: 6
+#  linux_wasm32_cargo_cache:
+#    folder: $CARGO_HOME/registry
+#    fingerprint_script: cat Cargo.lock
+#  firefox_version_script: firefox --version
+#  gecko_driver_version_script: geckodriver --version
+#  lumen_web_test_script: |
+#    pushd lumen_web
+#    wasm-pack test --headless --chrome --firefox
+#    popd
+#  examples_spawn_chain_build_script: |
+#    pushd examples/spawn-chain
+#    wasm-pack build
+#    popd
+#  examples_spawn_chain_test_script: |
+#    pushd examples/spawn-chain
+#    wasm-pack test --headless --chrome --firefox
+#    popd
+#  examples_spawn_chain_package_script: |
+#    pushd examples/spawn-chain
+#    pushd www
+#    npm install
+#    popd
+#    pushd pkg
+#    npm link
+#    popd
+#    pushd www
+#    npm link spawn-chain
+#    npm run build
+#    popd
+#    popd
+#  examples_chain_chain_package_artifacts:
+#    path: "examples/spawn-chain/www/dist/*"
+#  before_cache_script: rm -rf $CARGO_HOME/registry/index
 
-task:
-  name: macOS wasm32
-  osx_instance:
-    image: mojave-base
-  env:
-    PATH: ${HOME}/.cargo/bin:${PATH}
-  macos_wasm32_cargo_cache:
-    folder: $CARGO_HOME/registry
-    fingerprint_script: cat Cargo.lock
-  install_rustup_script: |
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
-  install_wasm32_target_script: rustup target add wasm32-unknown-unknown --toolchain nightly
-  install_wasm_bindgen_cli_script: cargo +nightly install wasm-bindgen-cli
-  install_wasm_pack_script: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-  install_chrome_script: |
-    brew cask install google-chrome
-    brew cask info google-chrome
-  install_chrome_driver_script: |
-    wget https://chromedriver.storage.googleapis.com/76.0.3809.126/chromedriver_mac64.zip
-    unzip chromedriver_mac64.zip
-    mv chromedriver /usr/local/bin/
-    rm chromedriver_mac64.zip
-    chromedriver --version
-  install_firefox_script: |
-    wget https://download-installer.cdn.mozilla.net/pub/firefox/releases/69.0/mac/en-US/Firefox%2069.0.dmg
-    hdiutil attach "Firefox 69.0.dmg"
-    cp -rf /Volumes/Firefox/Firefox.app /Applications
-    hdiutil detach /Volumes/Firefox
-  install_gecko_driver_script: |
-    wget https://github.com/mozilla/geckodriver/releases/download/v0.24.0/geckodriver-v0.24.0-macos.tar.gz
-    tar xvfz geckodriver-v0.24.0-macos.tar.gz
-    mv geckodriver /usr/local/bin/
-    rm geckodriver-v0.24.0-macos.tar.gz
-    geckodriver --version
-  enable_safari_driver_script: sudo safaridriver --enable
-  lumen_web_test_script: |
-    pushd lumen_web
-    wasm-pack test --headless --chrome --firefox --safari
-    popd
-  examples_spawn_chain_build_script: |
-    pushd examples/spawn-chain
-    wasm-pack build
-    popd
-  examples_spawn_chain_test_script: |
-    pushd examples/spawn-chain
-    wasm-pack test --headless --chrome --firefox --safari
-    popd
-  before_cache_script: rm -rf $CARGO_HOME/registry/index
+#task:
+#  name: macOS wasm32
+#  osx_instance:
+#    image: mojave-base
+#  env:
+#    PATH: ${HOME}/.cargo/bin:${PATH}
+#  macos_wasm32_cargo_cache:
+#    folder: $CARGO_HOME/registry
+#    fingerprint_script: cat Cargo.lock
+#  install_rustup_script: |
+#    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
+#  install_wasm32_target_script: rustup target add wasm32-unknown-unknown --toolchain nightly
+#  install_wasm_bindgen_cli_script: cargo +nightly install wasm-bindgen-cli
+#  install_wasm_pack_script: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+#  install_chrome_script: |
+#    brew cask install google-chrome
+#    brew cask info google-chrome
+#  install_chrome_driver_script: |
+#    wget https://chromedriver.storage.googleapis.com/76.0.3809.126/chromedriver_mac64.zip
+#    unzip chromedriver_mac64.zip
+#    mv chromedriver /usr/local/bin/
+#    rm chromedriver_mac64.zip
+#    chromedriver --version
+#  install_firefox_script: |
+#    wget https://download-installer.cdn.mozilla.net/pub/firefox/releases/69.0/mac/en-US/Firefox%2069.0.dmg
+#    hdiutil attach "Firefox 69.0.dmg"
+#    cp -rf /Volumes/Firefox/Firefox.app /Applications
+#    hdiutil detach /Volumes/Firefox
+#  install_gecko_driver_script: |
+#    wget https://github.com/mozilla/geckodriver/releases/download/v0.24.0/geckodriver-v0.24.0-macos.tar.gz
+#    tar xvfz geckodriver-v0.24.0-macos.tar.gz
+#    mv geckodriver /usr/local/bin/
+#    rm geckodriver-v0.24.0-macos.tar.gz
+#    geckodriver --version
+#  enable_safari_driver_script: sudo safaridriver --enable
+#  lumen_web_test_script: |
+#    pushd lumen_web
+#    wasm-pack test --headless --chrome --firefox --safari
+#    popd
+#  examples_spawn_chain_build_script: |
+#    pushd examples/spawn-chain
+#    wasm-pack build
+#    popd
+#  examples_spawn_chain_test_script: |
+#    pushd examples/spawn-chain
+#    wasm-pack test --headless --chrome --firefox --safari
+#    popd
+#  before_cache_script: rm -rf $CARGO_HOME/registry/index
