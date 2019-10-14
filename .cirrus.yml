@@ -53,7 +53,50 @@ task:
 #    folder: $CARGO_HOME\registry
 #    fingerprint_script: Get-Content Cargo.lock
   install_rustup_script: "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -URI https://win.rustup.rs -OutFile rustup-init.exe; ./rustup-init.exe -y --default-toolchain nightly"
-  << : *x86_64_TASK_TEMPLATE
+  build_script: cargo build
+  # `*_test_script`s in order of crate dependency graph
+  liblumen_arena_test_script: |
+    pushd liblumen_arena
+    cargo test
+    if ($LastExitCode -ne 0) {
+       throw "cargo test exited $$LastExitCode"
+    }
+    popd
+  liblumen_core_test_script: |
+    pushd liblumen_core
+    cargo test
+    if ($LastExitCode -ne 0) {
+      throw "cargo test exited $$LastExitCode"
+    }
+    popd
+  liblumen_alloc_test_script: |
+    pushd liblumen_alloc
+    cargo test
+    if ($LastExitCode -ne 0) {
+       throw "cargo test exited $$LastExitCode"
+    }
+    popd
+  lumen_runtime_test_script: |
+    pushd lumen_runtime
+    cargo test
+    if ($LastExitCode -ne 0) {
+      throw "cargo test exited $$LastExitCode"
+    }
+    popd
+  liblumen_eir_interpreter_test_script: |
+    pushd liblumen_eir_interpreter
+    cargo test
+    if ($LastExitCode -ne 0) {
+      throw "cargo test exited $$LastExitCode"
+    }
+    popd
+  examples_spawn_chain_test_script: |
+    pushd examples/spawn-chain
+    cargo test
+    if ($LastExitCode -ne 0) {
+      throw "cargo test exited $$LastExitCode"
+    }
+    popd
 #  before_cache_script: Remove-Item $CARGO_HOME\registry\index -Recurse -Force
 
 #task:
